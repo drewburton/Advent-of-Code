@@ -1,0 +1,9 @@
+﻿  Program.cpp
+C:\development\Learning\AdventOfCode\2019_day03\Program.cpp(45,31): warning C4018: '<': signed/unsigned mismatch
+C:\development\Learning\AdventOfCode\2019_day03\Program.cpp(66,23): warning C4018: '<': signed/unsigned mismatch
+C:\development\Learning\AdventOfCode\2019_day03\Program.cpp(71,45): warning C4018: '<': signed/unsigned mismatch
+C:\development\Learning\AdventOfCode\2019_day03\Program.cpp(114,23): warning C4018: '<': signed/unsigned mismatch
+C:\development\Learning\AdventOfCode\2019_day03\Program.cpp(119,45): warning C4018: '<': signed/unsigned mismatch
+C:\development\Learning\AdventOfCode\2019_day03\Program.cpp(170,23): warning C4018: '<': signed/unsigned mismatch
+C:\development\Learning\AdventOfCode\2019_day03\Program.cpp(203,23): warning C4018: '<': signed/unsigned mismatch
+  2019_day03.vcxproj -> C:\development\Learning\AdventOfCode\AdventOfCode\Debug\2019_day03.exe

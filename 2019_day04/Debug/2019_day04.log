@@ -1,0 +1,3 @@
+﻿  Program.cpp
+C:\development\Learning\AdventOfCode\2019_day04\Program.cpp(51,23): warning C4018: '<': signed/unsigned mismatch
+  2019_day04.vcxproj -> C:\development\Learning\AdventOfCode\AdventOfCode\Debug\2019_day04.exe
