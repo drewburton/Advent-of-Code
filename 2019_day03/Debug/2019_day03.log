@@ -6,4 +6,5 @@ C:\development\Learning\AdventOfCode\2019_day03\Program.cpp(114,23): warning C40
 C:\development\Learning\AdventOfCode\2019_day03\Program.cpp(119,45): warning C4018: '<': signed/unsigned mismatch
 C:\development\Learning\AdventOfCode\2019_day03\Program.cpp(170,23): warning C4018: '<': signed/unsigned mismatch
 C:\development\Learning\AdventOfCode\2019_day03\Program.cpp(203,23): warning C4018: '<': signed/unsigned mismatch
+  LINK : C:\development\Learning\AdventOfCode\AdventOfCode\Debug\2019_day03.exe not found or not built by the last incremental link; performing full link
   2019_day03.vcxproj -> C:\development\Learning\AdventOfCode\AdventOfCode\Debug\2019_day03.exe

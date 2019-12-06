@@ -146,7 +146,7 @@ void Program::CreateLine2()
                 y -= distance;
             }
 
-            if (!(wire2coor->size() % 100))
+            if (!(wire2coor->size() % 10))
                 cout << wire2coor->size() << endl;
 
             if (ContainsPoint(*wire1coor, x, y))
