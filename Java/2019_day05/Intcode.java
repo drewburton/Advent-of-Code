@@ -18,6 +18,7 @@ class Intcode
     private ArrayList<Integer> mode = new ArrayList<Integer>();
 
     private String[] instructions;
+    private int instructionsIndex = 0;
 
     Intcode(String filename)
     {
@@ -34,30 +35,30 @@ class Intcode
             instructions = input.split(",");
 
             // go through each instructions
-            for (int i = 0; i < instructions.length; i++)
+            for (instructionsIndex = 0; instructionsIndex < instructions.length; instructionsIndex++)
             {
-                String instruction = instructions[i];
+                String instruction = instructions[instructionsIndex];
                 
                 FindInstructions(instruction);
 
                 // follow instructions and move on to the next instruction pointer
-                i++;
+                instructionsIndex++;
                 if (opcode == 1)
-                    i = Add(instructions, i);
+                    Add();
                 else if (opcode == 2)
-                    i = Multiply(instructions, i);
+                    Multiply();
                 else if (opcode == 3)
-                    i = Input(instructions, i);
+                    Input();
                 else if (opcode == 4)
-                    i = Output(instructions, i);
+                    Output();
                 else if (opcode == 5)
-                    i = JumpTrue(instructions, i);
+                    JumpTrue();
                 else if (opcode == 6)
-                    i = JumpFalse(instructions, i);
+                    JumpFalse();
                 else if (opcode == 7)
-                    i = LessThan(instructions, i);
+                    LessThan();
                 else if (opcode == 8)
-                    i = Equals(instructions, i);
+                    Equals();
                 else if (opcode == 99)
                 {
                     System.out.println("done!");
@@ -102,267 +103,153 @@ class Intcode
         }
     }
 
-    private int Add(String[] instructions, int instructionsIndex)
+    private void Add()
     {
-        int first = FirstParam(instructionsIndex);
-
-
-        instructionsIndex++;
-        int second = 0;
-        if (mode.get(1) == 0)
-        {
-            second = Integer.parseInt(instructions[Integer.parseInt(instructions[instructionsIndex])]);
-        }
-        else if (mode.get(1) == 1)
-        {
-            String temp = instructions[instructionsIndex];
-            second = Integer.parseInt(temp);
-        }
-        else
-        {
-            System.out.println("finding second failed");
-        }
+        int first = GetParam(mode.get(0));
 
         instructionsIndex++;
-        instructions[Integer.parseInt(instructions[instructionsIndex])] = Integer.toString(first + second);
-        return instructionsIndex;
+        int second = GetParam(mode.get(1));
+
+        instructionsIndex++;
+        instructions[GetParam(1)] = Integer.toString(first + second);
     }
 
-    private int Multiply(String[] instructions, int instructionsIndex)
+    private void Multiply()
     {
-        int first = 0;
-        if (mode.get(0) == 0)
-        {
-            first = Integer.parseInt(instructions[Integer.parseInt(instructions[instructionsIndex])]);
-        }
-        else if (mode.get(0) == 1)
-        {
-            String temp = instructions[instructionsIndex];
-            first = Integer.parseInt(temp);
-        }
-        else
-        {
-            System.out.println("finding first failed");
-        }
+        int first = GetParam(mode.get(0));
 
         instructionsIndex++;
-        int second = 0;
-        if (mode.get(1) == 0)
-        {
-            second = Integer.parseInt(instructions[Integer.parseInt(instructions[instructionsIndex])]);
-        }
-        else if (mode.get(1) == 1)
-        {
-            second = Integer.parseInt(instructions[instructionsIndex]);
-        }
-        else
-        {
-            System.out.println("finding second failed");
-        }
+        int second = GetParam(mode.get(1));
 
         instructionsIndex++;
-        instructions[Integer.parseInt(instructions[instructionsIndex])] = Integer.toString(first * second);
-        return instructionsIndex;
+        instructions[GetParam(1)] = Integer.toString(first * second);
     }
 
-    private int Input(String[] instructions, int instructionsIndex)
+    private void Input()
     {
         instructions[Integer.parseInt(instructions[instructionsIndex])] = Integer.toString(input);
-        return instructionsIndex;
     }
 
-    private int Output(String[] instructions, int instructionsIndex)
+    private void Output()
     {
         if (mode.get(0) == 0)
-        {
-            System.out.println(instructions[Integer.parseInt(instructions[instructionsIndex])]);
-            return instructionsIndex;
-        }
+            System.out.println(instructions[GetParam(1)]);
         else
-        {
             System.out.println(instructions[instructionsIndex]);
-            return instructionsIndex;
-        }
     }
 
-    private int JumpTrue(String[] instructions, int instructionsIndex)
-    {
-        // something is wrong 
-        if (mode.get(0) == 0)
-        {
-            if (Integer.parseInt(instructions[Integer.parseInt(instructions[instructionsIndex])]) != 0)
-            {
-                instructionsIndex++;
-                if (mode.get(1) == 0)
-                    instructionsIndex = Integer.parseInt(instructions[Integer.parseInt(instructions[instructionsIndex])]) - 1;
-                else
-                {
-                    String temp = instructions[instructionsIndex];
-                    instructionsIndex = Integer.parseInt(temp) - 1;
-                }
-            }
-            else
-                instructionsIndex++;
-        }
-        else
-        {
-            if (Integer.parseInt(instructions[instructionsIndex]) != 0)
-            {
-                instructionsIndex++;
-                if (mode.get(1) == 0)
-                    instructionsIndex = Integer.parseInt(instructions[Integer.parseInt(instructions[instructionsIndex])]) - 1;
-                else
-                {
-                    String temp = instructions[instructionsIndex];
-                    instructionsIndex = Integer.parseInt(temp) - 1;
-                }
-            }
-            else
-                instructionsIndex++;
-        }
-        return instructionsIndex;
-    }
-
-    private int JumpFalse(String[] instructions, int instructionsIndex)
+    private void JumpTrue()
     {
         if (mode.get(0) == 0)
         {
-            if (Integer.parseInt(instructions[Integer.parseInt(instructions[instructionsIndex])]) == 0)
+            if (Position() == 0)
             {
                 instructionsIndex++;
-                if (mode.get(1) == 0)
-                    instructionsIndex = Integer.parseInt(instructions[Integer.parseInt(instructions[instructionsIndex])]) - 1;
-                else
-                {
-                    String temp = instructions[instructionsIndex];
-                    instructionsIndex = Integer.parseInt(temp) - 1;
-                }
+                return;
             }
-            else
-                instructionsIndex++;
         }
         else
         {
-            if (Integer.parseInt(instructions[instructionsIndex]) == 0)
+            if (Immediate() == 0)
             {
                 instructionsIndex++;
-                if (mode.get(1) == 0)
-                    instructionsIndex = Integer.parseInt(instructions[Integer.parseInt(instructions[instructionsIndex])]) - 1;
-                else
-                {
-                    String temp = instructions[instructionsIndex];
-                    instructionsIndex = Integer.parseInt(temp) - 1;
-                }
+                return;
             }
-            else
-                instructionsIndex++;
-        }
-        return instructionsIndex;
-    }
-
-    private int LessThan(String[] instructions, int instructionsIndex)
-    {
-        int first = 0;
-        if (mode.get(0) == 0)
-        {
-            first = Integer.parseInt(instructions[Integer.parseInt(instructions[instructionsIndex])]);
-        }
-        else if (mode.get(0) == 1)
-        {
-            String temp = instructions[instructionsIndex];
-            first = Integer.parseInt(temp);
-        }
-        else
-        {
-            System.out.println("finding first failed");
         }
 
         instructionsIndex++;
-        int second = 0;
         if (mode.get(1) == 0)
+            instructionsIndex = Position() - 1;
+        else
+            instructionsIndex = Immediate() - 1;
+    }
+
+    private void JumpFalse()
+    {
+        if (mode.get(0) == 0)
         {
-            second = Integer.parseInt(instructions[Integer.parseInt(instructions[instructionsIndex])]);
-        }
-        else if (mode.get(1) == 1)
-        {
-            String temp = instructions[instructionsIndex];
-            second = Integer.parseInt(temp);
+            if (Position() != 0)
+            {
+                instructionsIndex++;
+                return;
+            }
         }
         else
         {
-            System.out.println("finding second failed");
+            if (Immediate() != 0)
+            {
+                instructionsIndex++;
+                return;
+            }
         }
+        
+        instructionsIndex++;
+        if (mode.get(1) == 0)
+            instructionsIndex = Position() - 1;
+        else
+        {
+            instructionsIndex = Immediate() - 1;
+        }
+    }
+
+    private void LessThan()
+    {
+        int first = GetParam(mode.get(0));
+        
+        instructionsIndex++;
+        int second = GetParam(mode.get(1));
 
         instructionsIndex++;
         if (first < second)
-            instructions[Integer.parseInt(instructions[instructionsIndex])] = "1";
+            instructions[GetParam(1)] = "1";
         else
-            instructions[Integer.parseInt(instructions[instructionsIndex])] = "0";
-
-        return instructionsIndex;
+            instructions[GetParam(1)] = "0";
     }
 
-    private int Equals(String[] instructions, int instructionsIndex)
+    private void Equals()
     {
-        int first = 0;
-        if (mode.get(0) == 0)
-        {
-            first = Integer.parseInt(instructions[Integer.parseInt(instructions[instructionsIndex])]);
-        }
-        else if (mode.get(0) == 1)
-        {
-            String temp = instructions[instructionsIndex];
-            first = Integer.parseInt(temp);
-        }
-        else
-        {
-            System.out.println("finding first failed");
-        }
+        int first = GetParam(mode.get(0));
 
         instructionsIndex++;
-        int second = 0;
-        if (mode.get(1) == 0)
-        {
-            second = Integer.parseInt(instructions[Integer.parseInt(instructions[instructionsIndex])]);
-        }
-        else if (mode.get(1) == 1)
-        {
-            String temp = instructions[instructionsIndex];
-            second = Integer.parseInt(temp);
-        }
-        else
-        {
-            System.out.println("finding second failed");
-        }
+        int second = GetParam(mode.get(1));
 
         instructionsIndex++;
         if (first == second)
-            instructions[Integer.parseInt(instructions[instructionsIndex])] = "1";
+            instructions[GetParam(1)] = "1";
         else
-            instructions[Integer.parseInt(instructions[instructionsIndex])] = "0";
-
-        return instructionsIndex;
+            instructions[GetParam(1)] = "0";
     }
 
 
 
     // Utility methods
-    private int FirstParam(int instructionsIndex)
+    private int GetParam(int mode)
     {
-        int first = 0;
-        if (mode.get(0) == 0)
+        int param = 0;
+        if (mode == 0)
         {
-            first = Integer.parseInt(instructions[Integer.parseInt(instructions[instructionsIndex])]);
+            param = Integer.parseInt(instructions[Integer.parseInt(instructions[instructionsIndex])]);
         }
-        else if (mode.get(0) == 1)
+        else if (mode == 1)
         {
             String temp = instructions[instructionsIndex];
-            first = Integer.parseInt(temp);
+            param = Integer.parseInt(temp);
         }
         else
         {
             System.out.println("finding first failed");
         }
-        return first;
+        return param;
+    }
+
+    private int Immediate()
+    {
+        String temp = instructions[instructionsIndex];
+        return Integer.parseInt(temp);
+    }
+
+    private int Position()
+    {
+        return Integer.parseInt(instructions[Integer.parseInt(instructions[instructionsIndex])]);
     }
 }
