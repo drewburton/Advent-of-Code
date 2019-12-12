@@ -2,9 +2,15 @@
     "configurations": [
         {
             "type": "java",
-            "name": "CodeLens (Launch) - main",
+            "name": "CodeLens (Launch) - Main",
             "request": "launch",
-            "mainClass": "main"
+            "mainClass": "Main"
+        },
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - Main",
+            "request": "launch",
+            "mainClass": "Main"
         }
     ]
 }
