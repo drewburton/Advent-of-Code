@@ -45,4 +45,37 @@ class Object
             return distanceFromCOM;
         }
     }
+
+    public ArrayList<String> Find(ArrayList<String> path, String comp)
+    {
+        for (Object current : objectsInOrbit)
+        {
+            ArrayList<String> newPath = Copy(path);
+            newPath.add(current.identification);
+            if (current.identification.equals(comp))
+            {
+                return newPath;
+            }
+            else
+            {
+                ArrayList<String> possPath = current.Find(newPath, comp);
+                if (possPath.size() > 0)
+                {
+                    if (possPath.get(possPath.size() - 1).equals(comp))
+                        return possPath;
+                }
+            }
+        }
+        return path;
+    }
+
+    private ArrayList<String> Copy(ArrayList<String> copy)
+    {
+        ArrayList<String> temp = new ArrayList<String>();
+        for (String loop : copy)
+        {
+            temp.add(loop);
+        }
+        return temp;
+    }
 }
