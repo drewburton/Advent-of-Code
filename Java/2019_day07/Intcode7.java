@@ -20,7 +20,8 @@ class Intcode7
 
     private String[] instructions;
     private String[] copyInstructions;
-    private int instructionsIndex = 0;
+
+    private int[] indexes = new int[4];
 
     Intcode7(String filename)
     {
@@ -42,19 +43,24 @@ class Intcode7
                 i = GetPhase(i);
 
                 // Amplifier A
-                int currentOutput = RunProgram(0, phaseSettings.get(0));
+                indexes[0] = 0;
+                int currentOutput = RunProgram(0, phaseSettings.get(0), 0);
 
                 // Amplifier B
-                currentOutput = RunProgram(currentOutput, phaseSettings.get(1));
+                indexes[1] = 0;
+                currentOutput = RunProgram(currentOutput, phaseSettings.get(1), 1);
 
                 // Amplifier C
-                currentOutput = RunProgram(currentOutput, phaseSettings.get(2));
+                indexes[2] = 0;
+                currentOutput = RunProgram(currentOutput, phaseSettings.get(2), 2);
 
                 // Amplifier D
-                currentOutput = RunProgram(currentOutput, phaseSettings.get(3));
+                indexes[3] = 0;
+                currentOutput = RunProgram(currentOutput, phaseSettings.get(3), 3);
 
                 // Amplifier E
-                currentOutput = RunProgram(currentOutput, phaseSettings.get(4));
+                indexes[4] = 0;
+                currentOutput = RunProgram(currentOutput, phaseSettings.get(4), 4);
 
                 boolean duplicatePhase = false;
                 for (int a = 0; a < phaseSettings.size(); a++)
@@ -82,11 +88,13 @@ class Intcode7
     }
 
 
-    private int RunProgram(int input, int phase)
+    private int RunProgram(int input, int phase, int index)
     {
+        int instructionsIndex = indexes[index];
         currentInput = 0;
         copyInstructions = instructions.clone();
-        for (instructionsIndex = 0; instructionsIndex < instructions.length; instructionsIndex++)
+        opcode = 0;
+        while (opcode != 99)
         {
             String instruction = copyInstructions[instructionsIndex];
             FindInstructions(instruction);
@@ -94,30 +102,21 @@ class Intcode7
             // follow instructions and move on to the next instruction pointer
             instructionsIndex++;
             if (opcode == 1)
-                Add();
+                Add(index);
             else if (opcode == 2)
-                Multiply();
+                Multiply(index);
             else if (opcode == 3)
-                Input(input, phase);
+                Input(input, phase, index);
             else if (opcode == 4)
-                return Output();
+                return Output(index);
             else if (opcode == 5)
-                JumpTrue();
+                JumpTrue(index);
             else if (opcode == 6)
-                JumpFalse();
+                JumpFalse(index);
             else if (opcode == 7)
-                LessThan();
+                LessThan(index);
             else if (opcode == 8)
-                Equals();
-            else if (opcode == 99)
-            {
-                System.out.println("done!");
-                break;
-            }
-            else
-            {
-                break;
-            }
+                Equals(index);
         }
         return 0;
     }
@@ -146,8 +145,9 @@ class Intcode7
         }
     }
 
-    private void Add()
+    private void Add(int index)
     {
+        int instructionsIndex = indexes[index];
         int first = GetParam(mode.get(0));
 
         instructionsIndex++;
@@ -155,10 +155,12 @@ class Intcode7
 
         instructionsIndex++;
         copyInstructions[GetParam(1)] = Integer.toString(first + second);
+        indexes[index] = instructionsIndex + 1;
     }
 
-    private void Multiply()
+    private void Multiply(int index)
     {
+        int instructionsIndex = indexes[index];
         int first = GetParam(mode.get(0));
 
         instructionsIndex++;
@@ -166,10 +168,12 @@ class Intcode7
 
         instructionsIndex++;
         copyInstructions[GetParam(1)] = Integer.toString(first * second);
+        indexes[index] = instructionsIndex + 1;
     }
 
-    private void Input(int input, int phase)
+    private void Input(int input, int phase, int index)
     {
+        int instructionsIndex = indexes[index];
         String finalInput = "";
         if (currentInput == 0)
         {
@@ -181,28 +185,34 @@ class Intcode7
             finalInput = Integer.toString(input);
         }
         copyInstructions[Integer.parseInt(copyInstructions[instructionsIndex])] = finalInput;
-
+        indexes[index] = instructionsIndex + 1;
     }
 
-    private int Output()
+    private int Output(int index)
     {
+        int instructionsIndex = indexes[index];
         if (mode.get(0) == 0)
         {
-            return Integer.parseInt(copyInstructions[GetParam(1)]);
+            int output = Integer.parseInt(copyInstructions[GetParam(1)]);
+            indexes[index] = instructionsIndex + 1;
+            return output;
         }
         else
         {
-            return Integer.parseInt(copyInstructions[instructionsIndex]);
+            int output = Integer.parseInt(copyInstructions[instructionsIndex]);
+            indexes[index] = instructionsIndex + 1;
+            return output;
         }
     }
 
-    private void JumpTrue()
+    private void JumpTrue(int index)
     {
+        int instructionsIndex = indexes[index];
         if (mode.get(0) == 0)
         {
             if (Position() == 0)
             {
-                instructionsIndex++;
+                indexes[index] = instructionsIndex + 2;
                 return;
             }
         }
@@ -210,25 +220,28 @@ class Intcode7
         {
             if (Immediate() == 0)
             {
-                instructionsIndex++;
+                indexes[index] = instructionsIndex + 2;
                 return;
             }
         }
 
         instructionsIndex++;
         if (mode.get(1) == 0)
-            instructionsIndex = Position() - 1;
+            instructionsIndex = Position();
         else
-            instructionsIndex = Immediate() - 1;
+            instructionsIndex = Immediate();
+
+        indexes[index] = instructionsIndex;
     }
 
-    private void JumpFalse()
+    private void JumpFalse(int index)
     {
+        int instructionsIndex = indexes[index];
         if (mode.get(0) == 0)
         {
             if (Position() != 0)
             {
-                instructionsIndex++;
+                indexes[index] = instructionsIndex + 2;
                 return;
             }
         }
@@ -236,22 +249,25 @@ class Intcode7
         {
             if (Immediate() != 0)
             {
-                instructionsIndex++;
+                indexes[index] = instructionsIndex + 2;
                 return;
             }
         }
         
         instructionsIndex++;
         if (mode.get(1) == 0)
-            instructionsIndex = Position() - 1;
+            instructionsIndex = Position();
         else
         {
-            instructionsIndex = Immediate() - 1;
+            instructionsIndex = Immediate();
         }
+
+        indexes[index] = instructionsIndex;
     }
 
-    private void LessThan()
+    private void LessThan(int index)
     {
+        int instructionsIndex = indexes[index];
         int first = GetParam(mode.get(0));
         
         instructionsIndex++;
@@ -262,10 +278,13 @@ class Intcode7
             copyInstructions[GetParam(1)] = "1";
         else
             copyInstructions[GetParam(1)] = "0";
+
+        indexes[index] = instructionsIndex + 1;
     }
 
-    private void Equals()
+    private void Equals(int index)
     {
+        int instructionsIndex = indexes[index];
         int first = GetParam(mode.get(0));
 
         instructionsIndex++;
@@ -276,6 +295,8 @@ class Intcode7
             copyInstructions[GetParam(1)] = "1";
         else
             copyInstructions[GetParam(1)] = "0";
+
+        indexes[index] = instructionsIndex + 1;
     }
 
 
