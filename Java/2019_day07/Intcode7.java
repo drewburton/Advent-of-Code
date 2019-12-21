@@ -12,113 +12,55 @@ import javax.lang.model.util.ElementScanner6;
 
 class Intcode7
 {
-    ArrayList<Integer> phaseSettings = new ArrayList<Integer>();
-    private int currentInput = 0;
+    public enum status { paused, done, running };
 
     private int opcode = 0;
     private ArrayList<Integer> mode = new ArrayList<Integer>();
 
     private String[] instructions;
-    private String[] copyInstructions;
+    private int instructionsIndex = 0;
 
-    private int[] indexes = new int[4];
+    private ArrayList<Integer> input;
+    public ArrayList<Integer> output;
 
-    Intcode7(String filename)
+    Intcode7(String[] originalInstructions)
     {
-        try
-        {
-            Scanner scanner = new Scanner(new File(filename));
-            
-            String fileInput = "";
-
-            if (scanner.hasNext())
-            {
-                fileInput = scanner.nextLine();
-            }
-            instructions = fileInput.split(",");
-
-            int maxOutput = 0;
-            for (int i = 1234; i < 43210; i++)
-            {
-                i = GetPhase(i);
-
-                // Amplifier A
-                indexes[0] = 0;
-                int currentOutput = RunProgram(0, phaseSettings.get(0), 0);
-
-                // Amplifier B
-                indexes[1] = 0;
-                currentOutput = RunProgram(currentOutput, phaseSettings.get(1), 1);
-
-                // Amplifier C
-                indexes[2] = 0;
-                currentOutput = RunProgram(currentOutput, phaseSettings.get(2), 2);
-
-                // Amplifier D
-                indexes[3] = 0;
-                currentOutput = RunProgram(currentOutput, phaseSettings.get(3), 3);
-
-                // Amplifier E
-                indexes[4] = 0;
-                currentOutput = RunProgram(currentOutput, phaseSettings.get(4), 4);
-
-                boolean duplicatePhase = false;
-                for (int a = 0; a < phaseSettings.size(); a++)
-                {
-                    for (int b = 0; b < phaseSettings.size(); b++)
-                    {
-                        if (a == b)
-                            continue;
-                        if (phaseSettings.get(a).equals(phaseSettings.get(b)))
-                            duplicatePhase = true;
-                    }
-                }
-                if (currentOutput > maxOutput && !duplicatePhase)
-                {
-                    maxOutput = currentOutput;
-                    System.out.println(maxOutput + " " + i);
-                }
-            }
-            scanner.close();
-        } 
-        catch(FileNotFoundException ex)
-        {
-            System.out.println("file not found");
-        }
+        instructions = originalInstructions.clone();
     }
 
-
-    private int RunProgram(int input, int phase, int index)
+    public status RunProgram(ArrayList<Integer> i, ArrayList<Integer> o)
     {
-        int instructionsIndex = indexes[index];
-        currentInput = 0;
-        copyInstructions = instructions.clone();
+        input = i;
+        output = o;
+
         opcode = 0;
         while (opcode != 99)
         {
-            String instruction = copyInstructions[instructionsIndex];
+            String instruction = instructions[instructionsIndex];
             FindInstructions(instruction);
 
             // follow instructions and move on to the next instruction pointer
             instructionsIndex++;
             if (opcode == 1)
-                Add(index);
+                Add();
             else if (opcode == 2)
-                Multiply(index);
+                Multiply();
             else if (opcode == 3)
-                Input(input, phase, index);
+                if (Input() == status.paused)
+                    return status.paused;
             else if (opcode == 4)
-                return Output(index);
+                Output();
             else if (opcode == 5)
-                JumpTrue(index);
+                JumpTrue();
             else if (opcode == 6)
-                JumpFalse(index);
+                JumpFalse();
             else if (opcode == 7)
-                LessThan(index);
+                LessThan();
             else if (opcode == 8)
-                Equals(index);
+                Equals();
         }
-        return 0;
+        status var = status.done;
+        return var;
     }
 
     private void FindInstructions(String instruction)
@@ -145,74 +87,66 @@ class Intcode7
         }
     }
 
-    private void Add(int index)
+    private void Add()
     {
-        int instructionsIndex = indexes[index];
         int first = GetParam(mode.get(0));
 
         instructionsIndex++;
         int second = GetParam(mode.get(1));
 
         instructionsIndex++;
-        copyInstructions[GetParam(1)] = Integer.toString(first + second);
-        indexes[index] = instructionsIndex + 1;
+        instructions[GetParam(1)] = Integer.toString(first + second);
+        instructionsIndex++;
     }
 
-    private void Multiply(int index)
+    private void Multiply()
     {
-        int instructionsIndex = indexes[index];
         int first = GetParam(mode.get(0));
 
         instructionsIndex++;
         int second = GetParam(mode.get(1));
 
         instructionsIndex++;
-        copyInstructions[GetParam(1)] = Integer.toString(first * second);
-        indexes[index] = instructionsIndex + 1;
+        instructions[GetParam(1)] = Integer.toString(first * second);
+        instructionsIndex++;
     }
 
-    private void Input(int input, int phase, int index)
+    private status Input()
     {
-        int instructionsIndex = indexes[index];
-        String finalInput = "";
-        if (currentInput == 0)
-        {
-            finalInput = Integer.toString(phase);
-            currentInput++;
-        }
-        else
-        {
-            finalInput = Integer.toString(input);
-        }
-        copyInstructions[Integer.parseInt(copyInstructions[instructionsIndex])] = finalInput;
-        indexes[index] = instructionsIndex + 1;
+        if (input.size() == 0)
+            return status.paused;
+
+        int currentInput = input.get(0);
+        input.remove(0);
+        
+        instructions[Integer.parseInt(instructions[instructionsIndex])] = Integer.toString(currentInput);
+        instructionsIndex++;
+        status var = status.running;
+        return var;
     }
 
-    private int Output(int index)
+    private void Output()
     {
-        int instructionsIndex = indexes[index];
+        int currentOutput = 0;
         if (mode.get(0) == 0)
         {
-            int output = Integer.parseInt(copyInstructions[GetParam(1)]);
-            indexes[index] = instructionsIndex + 1;
-            return output;
+            currentOutput = Integer.parseInt(instructions[GetParam(1)]);
         }
         else
         {
-            int output = Integer.parseInt(copyInstructions[instructionsIndex]);
-            indexes[index] = instructionsIndex + 1;
-            return output;
+            currentOutput = Integer.parseInt(instructions[instructionsIndex]);
         }
+        instructionsIndex++;
+        output.add(currentOutput);
     }
 
-    private void JumpTrue(int index)
+    private void JumpTrue()
     {
-        int instructionsIndex = indexes[index];
         if (mode.get(0) == 0)
         {
             if (Position() == 0)
             {
-                indexes[index] = instructionsIndex + 2;
+                instructionsIndex += 2;
                 return;
             }
         }
@@ -220,7 +154,7 @@ class Intcode7
         {
             if (Immediate() == 0)
             {
-                indexes[index] = instructionsIndex + 2;
+                instructionsIndex += 2;
                 return;
             }
         }
@@ -230,18 +164,15 @@ class Intcode7
             instructionsIndex = Position();
         else
             instructionsIndex = Immediate();
-
-        indexes[index] = instructionsIndex;
     }
 
-    private void JumpFalse(int index)
+    private void JumpFalse()
     {
-        int instructionsIndex = indexes[index];
         if (mode.get(0) == 0)
         {
             if (Position() != 0)
             {
-                indexes[index] = instructionsIndex + 2;
+                instructionsIndex += 2;
                 return;
             }
         }
@@ -249,7 +180,7 @@ class Intcode7
         {
             if (Immediate() != 0)
             {
-                indexes[index] = instructionsIndex + 2;
+                instructionsIndex += 2;
                 return;
             }
         }
@@ -261,13 +192,10 @@ class Intcode7
         {
             instructionsIndex = Immediate();
         }
-
-        indexes[index] = instructionsIndex;
     }
 
-    private void LessThan(int index)
+    private void LessThan()
     {
-        int instructionsIndex = indexes[index];
         int first = GetParam(mode.get(0));
         
         instructionsIndex++;
@@ -275,16 +203,15 @@ class Intcode7
 
         instructionsIndex++;
         if (first < second)
-            copyInstructions[GetParam(1)] = "1";
+            instructions[GetParam(1)] = "1";
         else
-            copyInstructions[GetParam(1)] = "0";
+            instructions[GetParam(1)] = "0";
 
-        indexes[index] = instructionsIndex + 1;
+        instructionsIndex++;
     }
 
-    private void Equals(int index)
+    private void Equals()
     {
-        int instructionsIndex = indexes[index];
         int first = GetParam(mode.get(0));
 
         instructionsIndex++;
@@ -292,11 +219,11 @@ class Intcode7
 
         instructionsIndex++;
         if (first == second)
-            copyInstructions[GetParam(1)] = "1";
+            instructions[GetParam(1)] = "1";
         else
-            copyInstructions[GetParam(1)] = "0";
+            instructions[GetParam(1)] = "0";
 
-        indexes[index] = instructionsIndex + 1;
+        instructionsIndex++;
     }
 
 
@@ -307,11 +234,11 @@ class Intcode7
         int param = 0;
         if (mode == 0)
         {
-            param = Integer.parseInt(copyInstructions[Integer.parseInt(copyInstructions[instructionsIndex])]);
+            param = Integer.parseInt(instructions[Integer.parseInt(instructions[instructionsIndex])]);
         }
         else if (mode == 1)
         {
-            String temp = copyInstructions[instructionsIndex];
+            String temp = instructions[instructionsIndex];
             param = Integer.parseInt(temp);
         }
         else
@@ -323,51 +250,12 @@ class Intcode7
 
     private int Immediate()
     {
-        String temp = copyInstructions[instructionsIndex];
+        String temp = instructions[instructionsIndex];
         return Integer.parseInt(temp);
     }
 
     private int Position()
     {
-        return Integer.parseInt(copyInstructions[Integer.parseInt(copyInstructions[instructionsIndex])]);
-    }
-
-    private int GetPhase(int phase)
-    {
-        phaseSettings.clear();
-        String phaseString = Integer.toString(phase); 
-        ArrayList<String> phaseArray = new ArrayList<String>();
-        for (int i = 0; i < phaseString.length(); i++)
-        {
-            phaseArray.add(phaseString.charAt(i) + "");
-        }
-        // add in zeros to fill the phase values
-        while (phaseArray.size() < 5)
-        {
-            phaseArray.add(0, "0");
-        }
-        // make sure none of the values are above 4
-        for (int i = phaseArray.size() - 1; i >= 0; i--)
-        {
-            if (Integer.parseInt(phaseArray.get(i)) > 4)
-            {
-                phaseArray.set(i, "0");
-                phaseArray.set(i - 1, Integer.toString(Integer.parseInt(phaseArray.get(i - 1)) + 1));
-            }
-        }
-       
-        // fill the phase settings
-        for (String values : phaseArray)
-        {
-            phaseSettings.add(Integer.parseInt(values));
-        }
-
-        // find the index value that is the array
-        String filler = "";
-        for (String test : phaseArray)
-        {
-            filler += test;
-        }
-        return Integer.parseInt(filler);
+        return Integer.parseInt(instructions[Integer.parseInt(instructions[instructionsIndex])]);
     }
 }
