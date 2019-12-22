@@ -46,8 +46,10 @@ class Intcode7
             else if (opcode == 2)
                 Multiply();
             else if (opcode == 3)
+            {
                 if (Input() == status.paused)
                     return status.paused;
+            }
             else if (opcode == 4)
                 Output();
             else if (opcode == 5)
