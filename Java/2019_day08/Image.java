@@ -3,11 +3,15 @@ import java.io.*;
 
 class Image
 {
-    ArrayList<String> rows = new ArrayList<String>();
-    ArrayList<ArrayList<String>> layers = new ArrayList<ArrayList<String>>();
+    private ArrayList<String> rows = new ArrayList<String>();
+    private ArrayList<ArrayList<String>> layers = new ArrayList<ArrayList<String>>();
+    private int width;
+    private int height;
 
-    Image(String filename, int width, int height)
+    Image(String filename, int w, int h)
     {
+        width = w;
+        height = h;
         try
         {
             Scanner scanner = new Scanner(new File(filename));
@@ -29,13 +33,73 @@ class Image
                 layers.add(temp);
             }
 
-            int layerWithLeastZerosIndex = CountZeros();
-            PrintOnesAndTwos(layerWithLeastZerosIndex);
+            DecodeImage();
+            // int layerWithLeastZerosIndex = CountZeros();
+            // PrintOnesAndTwos(layerWithLeastZerosIndex);
             scanner.close();
         }
         catch(FileNotFoundException ex)
         {
             System.out.println("File not found!");
+        }
+    }
+
+    private void DecodeImage()
+    {        
+        // array to keep track of which positions are found, initialized to false
+        ArrayList<ArrayList<Boolean>> foundVisible = new ArrayList<ArrayList<Boolean>>();
+        for (int r = 0; r < height; r++)
+        {
+            foundVisible.add(new ArrayList<Boolean>());
+            for (int c = 0; c < width; c++)
+            {
+                foundVisible.get(r).add(false);
+            }
+        }
+
+        // array for the top visible pixels, initialized to transparent
+        ArrayList<ArrayList<Integer>> topVisible = new ArrayList<ArrayList<Integer>>();
+        for (int r = 0; r < height; r++)
+        {
+            topVisible.add(new ArrayList<Integer>());
+            for (int c = 0; c < width; c++)
+            {
+                topVisible.get(r).add(2);
+            }
+        }
+
+        // scan through the 3D layers and find the top visible
+        for (ArrayList<String> layer : layers)
+        {
+            for (int row = 0; row < layer.size(); row++)
+            {
+                for (int column = 0; column < layer.get(row).length(); column++)
+                {
+                    if (!foundVisible.get(row).get(column) && layer.get(row).charAt(column) != '2')
+                    {
+                        foundVisible.get(row).set(column, true);
+                        topVisible.get(row).set(column, Integer.parseInt(Character.toString(layer.get(row).charAt(column))));
+                    }
+                }
+            }
+        }
+
+        // print out the top visible pixels
+        for (ArrayList<Integer> row : topVisible)
+        {
+            for (int pixel : row)
+            {
+                if (pixel == 1)
+                {
+                    System.out.print("#");
+                }
+                else
+                {
+                    System.out.print(" ");
+                }
+                // System.out.print(pixel);
+            }
+            System.out.println();
         }
     }
 
