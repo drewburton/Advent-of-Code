@@ -21,7 +21,8 @@ class Machine
             instructions = fileInput.split(",");
 
             int highestOutput = 0;
-            for (int i = 1234; i < 43210; i++)
+            //for (int i = 1234; i < 43210; i++)
+            for (int i = 56789; i < 98765; i++)
             {
                 i = GetPhase(i);
 
@@ -81,21 +82,35 @@ class Machine
             {
                 phaseArray.add(phaseString.charAt(i) + "");
             }
-            // add in zeros to fill the phase values
-            while (phaseArray.size() < 5)
+
+            if (false)
             {
-                phaseArray.add(0, "0");
-            }
-            // make sure none of the values are above 4
-            for (int i = phaseArray.size() - 1; i >= 0; i--)
-            {
-                if (Integer.parseInt(phaseArray.get(i)) > 4)
+                // add in zeros to fill the phase values
+                while (phaseArray.size() < 5)
                 {
-                    phaseArray.set(i, "0");
-                    phaseArray.set(i - 1, Integer.toString(Integer.parseInt(phaseArray.get(i - 1)) + 1));
+                    phaseArray.add(0, "0");
+                }
+                // make sure none of the values are above 4
+                for (int i = phaseArray.size() - 1; i >= 0; i--)
+                {
+                    if (Integer.parseInt(phaseArray.get(i)) > 4)
+                    {
+                        phaseArray.set(i, "0");
+                        phaseArray.set(i - 1, Integer.toString(Integer.parseInt(phaseArray.get(i - 1)) + 1));
+                    }
                 }
             }
-        
+
+            // make sure values are between 5 and 9
+            for (int i = phaseArray.size() - 1; i >= 0; i--)
+            {
+                if (Integer.parseInt(phaseArray.get(i)) < 5)
+                {
+                    phaseArray.set(i, "5");
+                }
+            }
+
+
             // fill the phase settings
             for (String values : phaseArray)
             {

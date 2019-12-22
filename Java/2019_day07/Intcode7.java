@@ -116,7 +116,10 @@ class Intcode7
     private status Input()
     {
         if (input.size() == 0)
+        {
+            instructionsIndex--;
             return status.paused;
+        }
 
         int currentInput = input.get(0);
         input.remove(0);
