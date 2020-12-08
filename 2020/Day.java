@@ -5,6 +5,7 @@ import day04.Day04;
 import day05.Day05;
 import day06.Day06;
 import day07.Day07;
+import day08.Day08;
 
 public class Day {
     public boolean run(int day) {
@@ -22,6 +23,8 @@ public class Day {
             case 6: (new Day06()).run();
                 return true;
             case 7: (new Day07()).run();
+                return true;
+            case 8: (new Day08()).run();
                 return true;
             default: return false;
         }
