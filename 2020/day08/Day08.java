@@ -20,9 +20,7 @@ public class Day08 {
     }
 
     public void run() {
-
         for (int i = 0; i < instructions.size(); i++) {
-            String[] parts = instructions.get(i).split(" ");
             switchInstruction(i);
             if (runInstructions()) {
                 System.out.println(accumulator);

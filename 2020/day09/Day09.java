@@ -9,6 +9,7 @@ public class Day09 {
     public Day09() {
         try {
             Scanner scanner = new Scanner(new File("day09\\numbers.txt"));
+            // Scanner scanner = new Scanner(new File("day09\\dadsInput.txt"));
             numbers = new ArrayList<>();
             while (scanner.hasNextLine()) {
                 numbers.add(Long.parseLong(scanner.nextLine()));
